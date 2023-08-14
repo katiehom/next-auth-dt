@@ -3,31 +3,64 @@ import Head from "next/head"
 import Layout from "@/components/layout/layout"
 import Link from "next/link"
 import styles from "../styles/Form.module.css"
-import Image from "next/image"
+// import Image from "next/image"
 import { HiAtSymbol, HiFingerPrint } from "react-icons/hi"
-import { signIn, signOut } from "next-auth/react"
+import { FaGoogle, FaInstagram, FaApple } from "react-icons/fa6"
+import { signIn } from "next-auth/react"
 import { useFormik } from "formik"
-import login_validate from "@/lib/validate"
+import loginValidate from "@/lib/validate"
+import { useRouter } from "next/router"
+import signInCallback from "@/utils/signInCallback"
 
 export default function Login() {
   const [show, setShow] = useState()
+  const router = useRouter()
 
   const formik = useFormik({
     initialValues: {
       email: "",
       password: "",
     },
-    validate: (login_validate) => {},
+    validate: loginValidate,
     onSubmit,
   })
 
+  // async function onSubmit(values) {
+  //   const status = await signIn("credentials", {
+  //     redirect: false,
+  //     email: values.email,
+  //     password: values.password,
+  //     callbackUrl: "/",
+  //   })
+
+  //   if (status.ok) {
+  //     router.push(status.url)
+  //   }
+  // }
+
   async function onSubmit(values) {
-    console.log(values)
+    const callbackUrl = window.location.origin
+    const status = await signIn("credentials", {
+      redirect: false,
+      email: values.email,
+      password: values.password,
+      callbackUrl,
+    })
+
+    if (status.ok) {
+      await signInCallback({ email: values.email, provider: "credentials" }) // Update provider value as needed
+      router.push(status.url)
+    }
   }
 
   // Google Handler function - could also pass this directly to the onClick function as an anonymous function
+  // async function handleGoogleSignIn() {
+  //   signIn("google", { callbackUrl: "http://localhost:3000" })
+  // }
+
   async function handleGoogleSignIn() {
-    signIn("google", { callbackUrl: "http://localhost:3000" })
+    const callbackUrl = window.location.origin
+    signIn("google", { callbackUrl })
   }
 
   return (
@@ -45,7 +78,13 @@ export default function Login() {
         </div>
         {/* form */}
         <form className="flex flex-col gap-5" onSubmit={formik.handleSubmit}>
-          <div className={styles.input_group}>
+          <div
+            className={`${styles.input_group} ${
+              formik.errors.email && formik.touched.email
+                ? "border-2 border-rose-600"
+                : "border border-gray-300"
+            }`}
+          >
             <input
               type="email"
               name="email"
@@ -57,7 +96,16 @@ export default function Login() {
               <HiAtSymbol size={25} />
             </span>
           </div>
-          <div className={styles.input_group}>
+          {formik.errors.email && formik.touched.email && (
+            <span className="text-rose-500">{formik.errors.email}</span>
+          )}
+          <div
+            className={`${styles.input_group} ${
+              formik.errors.password && formik.touched.password
+                ? "border-2 border-rose-600"
+                : "border border-gray-300"
+            }`}
+          >
             <input
               type={`${show ? "text" : "password"}`}
               name="password"
@@ -72,6 +120,9 @@ export default function Login() {
               <HiFingerPrint size={25} />
             </span>
           </div>
+          {formik.errors.password && formik.touched.password && (
+            <span className="text-rose-500">{formik.errors.password}</span>
+          )}
           {/* login buttons */}
           <div className="input-button">
             <button type="submit">Login</button>
@@ -79,47 +130,56 @@ export default function Login() {
           <div>
             <button onClick={() => signIn("instagram")} type="button">
               Sign in with Instagram
-              <Image
+              <span className="icon flex items-center px-4">
+                <FaInstagram size={25} />
+              </span>
+              {/* <Image
                 src={"/assets/instagram.svg"}
                 width={25}
                 height={25}
                 alt="Instagram logo"
-              ></Image>
+              ></Image> */}
             </button>
           </div>
           <div>
             {/* only want one 'submit' button inside form */}
             <button type="button" onClick={handleGoogleSignIn}>
               Sign in with Google
-              <Image
+              <span className="icon flex items-center px-4">
+                <FaGoogle size={20} />
+              </span>
+              {/* <Image
                 src={"/assets/google.svg"}
                 width={20}
                 height={20}
                 alt="Google logo"
-              ></Image>
+              ></Image> */}
             </button>
           </div>
           <div>
             <button type="button">
-              Sign in with GitHub
-              <Image
-                src={"/assets/github.svg"}
+              Sign in with Apple
+              <span className="icon flex items-center px-4">
+                <FaApple size={25} />
+              </span>
+              {/* <Image
+                src={"/assets/apple.svg"}
                 width={25}
                 height={25}
-                alt="GitHub logo"
-              ></Image>
+                alt="Apple logo"
+              ></Image> */}
             </button>
           </div>
-        </form>
 
-        {/* bottom */}
-        <p className="text-center text-gray-400">
-          Do not have an account yet?
-          <Link href={"/register"} className="text-blue-700">
-            {" "}
-            Sign Up
-          </Link>
-        </p>
+          {/* bottom */}
+          <p className="text-center text-gray-400">
+            Do not have an account yet?
+            <Link href={"/register"} className="text-blue-700">
+              {" "}
+              Sign Up
+            </Link>
+          </p>
+        </form>
       </section>
     </Layout>
   )

@@ -1,6 +1,6 @@
 .input_group {
   display: flex;
-  border: 1px solid gray;
+  /* border: 1px solid gray; */
   border-radius: 0.75rem;
   position: relative;
 }
@@ -37,7 +37,7 @@
   color: #6366f1;
 }
 
-.input_text:not([type='email']) ~ span:hover * {
+.input_text:not([type="email"]) ~ span:hover * {
   color: #6366f1;
   cursor: pointer;
 }

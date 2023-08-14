@@ -12,6 +12,7 @@ export default function Home() {
   // const [session, setSession] = useState(true);
 
   const { data: session } = useSession()
+  console.log({ data: session })
 
   function handleSignOut() {
     signOut()

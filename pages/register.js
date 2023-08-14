@@ -6,9 +6,12 @@ import styles from "../styles/Form.module.css"
 import Image from "next/image"
 import { HiOutlineUser, HiAtSymbol, HiFingerPrint } from "react-icons/hi"
 import { useFormik } from "formik"
+import { registerValidate } from "@/lib/validate"
+import { useRouter } from "next/router"
 
 export default function Register() {
   const [show, setShow] = useState({ password: false, cPassword: false })
+  const router = useRouter()
 
   const formik = useFormik({
     initialValues: {
@@ -17,11 +20,24 @@ export default function Register() {
       password: "",
       cPassword: "",
     },
+    validate: registerValidate,
     onSubmit,
   })
 
   async function onSubmit(values) {
-    console.log(initialValues)
+    const options = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    }
+
+    await fetch("http://localhost:3000/api/auth/signup", options)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          router.push("http://localhost:3000")
+        }
+      })
   }
 
   return (
@@ -39,7 +55,13 @@ export default function Register() {
         </div>
         {/* form */}
         <form className="flex flex-col gap-5" onSubmit={formik.handleSubmit}>
-          <div className={styles.input_group}>
+          <div
+            className={`${styles.input_group} ${
+              formik.errors.username && formik.touched.username
+                ? "border-2 border-rose-600"
+                : "border border-gray-300"
+            }`}
+          >
             <input
               type="text"
               name="username"
@@ -51,7 +73,16 @@ export default function Register() {
               <HiOutlineUser size={25} />
             </span>
           </div>
-          <div className={styles.input_group}>
+          {formik.errors.username && formik.touched.username && (
+            <span className="text-rose-500">{formik.errors.username}</span>
+          )}
+          <div
+            className={`${styles.input_group} ${
+              formik.errors.email && formik.touched.email
+                ? "border-2 border-rose-600"
+                : "border border-gray-300"
+            }`}
+          >
             <input
               type="email"
               name="email"
@@ -63,7 +94,16 @@ export default function Register() {
               <HiAtSymbol size={25} />
             </span>
           </div>
-          <div className={styles.input_group}>
+          {formik.errors.email && formik.touched.email && (
+            <span className="text-rose-500">{formik.errors.email}</span>
+          )}
+          <div
+            className={`${styles.input_group} ${
+              formik.errors.password && formik.touched.password
+                ? "border-2 border-rose-600"
+                : "border border-gray-300"
+            }`}
+          >
             <input
               type={`${show.password ? "text" : "password"}`}
               name="password"
@@ -78,7 +118,16 @@ export default function Register() {
               <HiFingerPrint size={25} />
             </span>
           </div>
-          <div className={styles.input_group}>
+          {formik.errors.password && formik.touched.password && (
+            <span className="text-rose-500">{formik.errors.password}</span>
+          )}
+          <div
+            className={`${styles.input_group} ${
+              formik.errors.cPassword && formik.touched.cPassword
+                ? "border-2 border-rose-600"
+                : "border border-gray-300"
+            }`}
+          >
             <input
               type={`${show.cPassword ? "text" : "password"}`}
               name="cPassword"
@@ -93,6 +142,10 @@ export default function Register() {
               <HiFingerPrint size={25} />
             </span>
           </div>
+          <span></span>
+          {formik.errors.cPassword && formik.touched.cPassword && (
+            <span className="text-rose-500">{formik.errors.cPassword}</span>
+          )}
           {/* login buttons */}
           <div className="input-button">
             <button type="submit">Sign Up</button>
